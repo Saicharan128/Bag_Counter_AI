@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Gunny Bag Counter</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <style>
+        :root {
+            --bg: #ffffff;
+            --text: #111827;
+            --muted: #6b7280;
+            --border: #e5e7eb;
+            --ring: #2563eb;
+            --surface: #ffffff;
+            --success: #166534;
+            --error: #b91c1c;
+            --shadow: 0 1px 2px rgba(0, 0, 0, .06), 0 4px 12px rgba(0, 0, 0, .04);
+            --radius: 12px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0b0f14;
+                --text: #e5e7eb;
+                --muted: #9ca3af;
+                --border: #1f2937;
+                --surface: #0f141a;
+                --shadow: none;
+            }
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        html,
+        body {
+            height: 100%
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font: 15px/1.5 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+            display: grid;
+            place-items: center;
+            padding: 24px;
+        }
+
+        .container {
+            width: min(720px, 100%);
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: var(--shadow);
+        }
+
+        h1 {
+            margin: 0 0 4px;
+            font-size: clamp(20px, 2.6vw, 24px);
+            font-weight: 600;
+        }
+
+        .lead {
+            margin: 0 0 16px;
+            color: var(--muted);
+        }
+
+        /* Buttons */
+        button,
+        .file-btn {
+            appearance: none;
+            border: 1px solid var(--border);
+            background: #f9fafb;
+            padding: 10px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        button.primary {
+            background: #1f2937;
+            color: #fff;
+            border-color: #1f2937;
+        }
+
+        button:disabled {
+            opacity: .6;
+            cursor: not-allowed
+        }
+
+        button:focus-visible,
+        .file-btn:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, .35);
+            border-color: var(--ring);
+        }
+
+        @media (prefers-color-scheme: dark) {
+
+            button,
+            .file-btn {
+                background: #111827;
+                color: #e5e7eb;
+                border-color: #374151;
+            }
+
+            button.primary {
+                background: #2563eb;
+                border-color: #2563eb;
+            }
+        }
+
+        /* Form layout */
+        .stack {
+            display: grid;
+            gap: 14px;
+        }
+
+        .row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* Dropzone */
+        .drop {
+            border: 1px dashed var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            display: grid;
+            gap: 10px;
+            justify-items: center;
+            text-align: center;
+            color: var(--muted);
+            background: transparent;
+        }
+
+        .drop[data-active="true"] {
+            border-color: var(--ring);
+            background: rgba(37, 99, 235, .04);
+        }
+
+        input[type=file] {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0 0 0 0);
+            border: 0;
+        }
+
+        /* Preview */
+        #preview {
+            max-width: 100%;
+            width: min(100%, 560px);
+            aspect-ratio: 16/10;
+            object-fit: contain;
+            display: none;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: #f3f4f6;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            #preview {
+                background: #111827;
+                border-color: #1f2937;
+            }
+        }
+
+        /* Result */
+        #result {
+            font-size: 1rem;
+            margin-top: 8px;
+            white-space: pre-line;
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: #f9fafb;
+        }
+
+        .status .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .status.ok .dot {
+            background: var(--success);
+        }
+
+        .status.err .dot {
+            background: var(--error);
+        }
+
+        .meta {
+            color: var(--muted);
+            margin-top: 6px;
+        }
+
+        .foot {
+            margin-top: 12px;
+            color: var(--muted);
+            font-size: .95rem;
+        }
+
+        .kbd {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: .85em;
+            border: 1px solid var(--border);
+            background: #f3f4f6;
+            padding: .15em .45em;
+            border-radius: 6px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .status {
+                background: #0b0f14;
+            }
+
+            .kbd {
+                background: #0b0f14;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="container" aria-live="polite">
+        <section class="card">
+            <h1>Gunny Bag Counter</h1>
+            <p class="lead">Upload an image to predict the bag count using your local service.</p>
+
+            <form id="form" class="stack" novalidate>
+                <label for="file" class="drop" id="drop">
+                    <div>Drag & drop an image here, or</div>
+                    <div class="row">
+                        <label class="file-btn" for="file" role="button" aria-controls="file">Choose image</label>
+                        <button class="primary" type="submit" id="submit">Predict</button>
+                    </div>
+                    <div class="meta">PNG/JPG/HEIC • up to ~20MB</div>
+                    <input id="file" type="file" name="image" accept="image/*" required />
+                </label>
+
+                <img id="preview" alt="Selected image preview" />
+                <div id="result"></div>
+            </form>
+
+            <p class="foot">Tip: press <span class="kbd">Enter</span> after selecting a file.</p>
+        </section>
+    </main>
+
+    <script>
+        const form = document.getElementById('form');
+        const fileInput = document.getElementById('file');
+        const preview = document.getElementById('preview');
+        const result = document.getElementById('result');
+        const drop = document.getElementById('drop');
+        const submitBtn = document.getElementById('submit');
+
+        const setActive = (v) => drop.setAttribute('data-active', v ? 'true' : 'false');
+
+        fileInput.addEventListener('change', () => {
+            const f = fileInput.files?.[0];
+            if (!f) { preview.style.display = 'none'; result.textContent = ''; return; }
+            const url = URL.createObjectURL(f);
+            preview.src = url;
+            preview.style.display = 'block';
+            result.textContent = '';
+        });
+
+        ['dragenter', 'dragover'].forEach(evt =>
+            drop.addEventListener(evt, e => { e.preventDefault(); e.stopPropagation(); setActive(true); })
+        );
+        ['dragleave', 'drop'].forEach(evt =>
+            drop.addEventListener(evt, e => { e.preventDefault(); e.stopPropagation(); setActive(false); })
+        );
+        drop.addEventListener('drop', e => {
+            const files = e.dataTransfer?.files;
+            if (files && files.length) {
+                fileInput.files = files;
+                fileInput.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        });
+
+        function showStatus(type, text) {
+            const div = document.createElement('div');
+            div.className = 'status ' + (type === 'ok' ? 'ok' : 'err');
+            const dot = document.createElement('span'); dot.className = 'dot';
+            const span = document.createElement('span'); span.textContent = text;
+            div.appendChild(dot); div.appendChild(span);
+            result.innerHTML = ''; result.appendChild(div);
+        }
+        function setLoading(loading) {
+            submitBtn.disabled = loading;
+            submitBtn.textContent = loading ? 'Predicting…' : 'Predict';
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const f = fileInput.files?.[0];
+            if (!f) { showStatus('err', 'Please choose an image.'); return; }
+            if (!/^image\//.test(f.type || '')) { showStatus('err', 'Unsupported file type.'); return; }
+            if (f.size > 20 * 1024 * 1024) { showStatus('err', 'File too large (>20MB).'); return; }
+
+            setLoading(true);
+            showStatus('ok', 'Uploading…');
+
+            const fd = new FormData();
+            fd.append('image', f, f.name);
+
+            try {
+                const res = await fetch('http://localhost:5000/predict', { method: 'POST', body: fd });
+                const ct = (res.headers.get('content-type') || '').toLowerCase();
+
+                let data = null;
+                if (ct.includes('application/json')) {
+                    data = await res.json();
+                } else {
+                    const text = await res.text();
+                    throw new Error(text || 'Non-JSON response from server');
+                }
+                if (!res.ok) throw new Error(data.error || 'Prediction failed');
+
+                result.innerHTML = '';
+                const badge = document.createElement('div'); badge.className = 'status ok';
+                const dot = document.createElement('span'); dot.className = 'dot';
+                const text = document.createElement('span'); text.textContent = `Predicted count: ${data.predicted_count}`;
+                const meta = document.createElement('div'); meta.className = 'meta'; meta.textContent = `File: ${data.filename}`;
+                badge.appendChild(dot); badge.appendChild(text);
+                result.appendChild(badge); result.appendChild(meta);
+            } catch (err) {
+                result.innerHTML = '';
+                showStatus('err', `Error: ${err?.message || 'Something went wrong'}`);
+            } finally {
+                setLoading(false);
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && document.activeElement === fileInput) {
+                form.requestSubmit();
+            }
+        });
+    </script>
+</body>
+
+</html>
