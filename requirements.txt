@@ -4,3 +4,4 @@ Pillow
 scikit-learn
 gunicorn
 joblib
+Flask-Cors
