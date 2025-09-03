@@ -326,7 +326,7 @@
             fd.append('image', f, f.name);
 
             try {
-                const res = await fetch('http://localhost:5000/predict', { method: 'POST', body: fd });
+                const res = await fetch('https://bag-counter-ai.onrender.com/predict', { method: 'POST', body: fd });
                 const ct = (res.headers.get('content-type') || '').toLowerCase();
 
                 let data = null;
