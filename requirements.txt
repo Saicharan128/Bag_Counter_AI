@@ -2,4 +2,5 @@ Flask
 numpy
 Pillow
 scikit-learn
+gunicorn
 joblib
